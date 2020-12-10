@@ -75,7 +75,7 @@ class Scraper():
         # Then right click > Inspect > Network > Scroll down until more content is loaded
         # Click on the website that appears under name > Headers
         # You'll see that there is a request URL and Method (GET) for the website
-        for page in range(pages):
+        for page in range(1, pages+1):
             
             # Params are in Headers > "Query String Parameters"
             PARAMS = {
@@ -87,18 +87,22 @@ class Scraper():
         
             # Preview shows the json formatted webpage retrieved by the GET request
             # Here requests.get() returns a string, so another .json() is added to format string to JSON
-            webpages = requests.get(self.SITE, params=PARAMS).json()    
+            try:
+                webpages = requests.get(self.SITE, params=PARAMS).json()    
 
             # Use a JSON Online Editor to view the structure of the JSON file
             # Each news article is stored separately inside webpages["lists"]
-            for news in webpages["lists"]:
-                title = news["title"]
-                link = news["titleLink"]
-                category = news["cateTitle"]
-                time = news["time"]["dateTime"]
+                for news in webpages["lists"]:
+                    title = news["title"]
+                    link = news["titleLink"]
+                    category = news["cateTitle"]
+                    time = news["time"]["dateTime"]
 
-                # After obtaining title, link, category and name, format into a dict then store into the list
-                self.webpages.append({"title": title, "link": link, "category": category, "time": time})
+                    # After obtaining title, link, category and name, format into a dict then store into the list
+                    self.webpages.append({"title": title, "link": link, "category": category, "time": time})
+            except:
+                print(f"Error: Page {page}")
+                
 
         for webpage in self.webpages:
             text = ""
@@ -133,6 +137,6 @@ class Scraper():
             The name of the outputted csv file.
         """
         output = pd.DataFrame()
-        output = output.append(self.webpages, ignore_index = True)
-        output.to_csv(filename, encoding = "utf-8")
-        print(f"News data has been exported to {filename}.csv.")
+        output = output.append(self.webpages)
+        output.to_csv(filename, encoding = "utf-8", index = False)
+        print(f"News data has been exported to {filename}.")
